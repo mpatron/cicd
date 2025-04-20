@@ -1,0 +1,72 @@
+---
+# Default values for airflow.
+# helm upgrade --install airflow apache-airflow/airflow
+# --namespace airflow --create-namespace --values values.yml
+extraConfigMaps:
+  ca-cerficates-idm.pem:
+    data: |
+      ca-cerficates-idm.pem: |
+        -----BEGIN CERTIFICATE-----
+        MIIETDCCArSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA3MRUwEwYDVQQKDAxKT0JK
+        RUNUUy5PUkcxHjAcBgNVBAMMFUNlcnRpZmljYXRlIEF1dGhvcml0eTAeFw0yNTAz
+        MjQxMDEwNDdaFw00NTAzMjQxMDEwNDdaMDcxFTATBgNVBAoMDEpPQkpFQ1RTLk9S
+        RzEeMBwGA1UEAwwVQ2VydGlmaWNhdGUgQXV0aG9yaXR5MIIBojANBgkqhkiG9w0B
+        AQEFAAOCAY8AMIIBigKCAYEA4KYnxdN1BhczQxqqQVLH9jvwALIK3KsdNI3SpBIs
+        q6WpqgbwUxoF/ax+qXF9nyalDH6bRt943CuoX67K0qNJirqZvVbP/1ctdYzc/F0Z
+        fX54UW3r0L6aWtXPqTzUHehlo/3DdRksryx9v5mn0w7eM34n9SNBMmKFi7Vj+BKC
+        90K/SVbh49l5dFhOhGPnKv+weuR3YVFB/PZcWdsBGcP96YlEQsuuWOiGgZIEMzdU
+        ko1nKWwhNAB8y3A/OFkeMiV/lYpVdbhE22ecWBLp6jtgFjbuRnftYhKHDK5sJKeZ
+        NbB0d8m0N8JiSUEA+qZsbXjlaGlC4Y/HfOpAgNuVo/fnexlPkYGuZhk3e2e9TTfv
+        ijiqVAnJcuIfMsd9HynsXnCiK674NodIz/ONQmqN1LgHCIrUxOriouiyQQDc7UQK
+        JMe4zc9j22YaXzGrOhNaAu5/3ORRe7boRopw8fhbUqc5tOw7ln5skdKBbqERFowb
+        +ShhoZIJvBrIBHpT5mgY4AbLAgMBAAGjYzBhMB0GA1UdDgQWBBR7z0G81XsbP0rp
+        rRSD23g22TA39zAfBgNVHSMEGDAWgBR7z0G81XsbP0rprRSD23g22TA39zAPBgNV
+        HRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIBxjANBgkqhkiG9w0BAQsFAAOCAYEA
+        sgl/E5Nm0edvHj0wkJtNbDOv2U7FyqTf3a8OytSOK074l+4CjUMZuDrGA9jjymJJ
+        loUnj+6Jz8SgZxSYL3c/6Pp5X7SdVGfiLIBZa0DKtVi/RDgz60XUYbV60AYgsdm/
+        pU4y8yVfMpr+fFImlY7G8Q34+BTM4sY35HYcRGNEHHHDTW1mbJQ9e6vPdplY5DHu
+        H862Es5EWsYd5GKLDP0Sytx/WZy2GGtdrqUMY7mNnQTqxBXeae10n0kq+oeMlycK
+        6X1ZaqKzRzp1ecfqbWTWKxd6GUOt1SbWuuP15gQaonFiCTUhlnkwwWkhuPs8KjOj
+        jzEsjU6sodWxiyAPj5bZf8667crlhjAp3464DBe96WJmivchS5Fwx2tADyno0vdo
+        ksDskwf6cbGWDey7S5b3RuHf55BglOLgqrg/15zcKjk2rqmbkedlpr3rD/xZcirJ
+        yvUFC76Busa/3RLAMQjTdcoLeD7w9nt/ND434jeNG8L6OOLz3zs7UaZLZCHtwGB3
+        -----END CERTIFICATE-----
+dags:
+  persistence:
+    enabled: true
+  gitSync:
+    enabled: true
+    repo: https://gitlab.jobjects.org/mickael/cicd-ml.git
+    branch: main
+    rev: HEAD
+    ref: main
+    subPath: "dag"
+workers:
+  extraInitContainers:
+    - name: init-cacerts
+      image: apache/airflow:2.9.3
+      command:
+        - 'bash'
+        - '-c'
+        - '|'
+        - 'update-ca-certificates'
+      volumeMounts:
+        - name: myca
+          mountPath: /usr/share/ca-certificates/extra/ca-cerficates-idm.pem
+          subPath: ca-cerficates-idm.pem
+#        - name: ca-cerficates-all
+#          mountPath: /etc/ssl/certs/ca-certificates.crt
+  extraVolumes:
+    - name: myca
+      configMap:
+        name: ca-cerficates-idm.pem
+        defaultMode: 0644
+#    - name: ca-cerficates-all
+#      emptyDir: {}
+  extraVolumeMounts:
+    - name: myca
+      mountPath: /usr/share/ca-certificates/extra/ca-cerficates-idm.pem
+      subPath: ca-cerficates-idm.pem
+#    - name: ca-cerficates-all
+#      mountPath: /etc/ssl/certs/ca-certificates.crt
+
