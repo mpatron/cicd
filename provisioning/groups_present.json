@@ -1,0 +1,44 @@
+{
+    "groups_present": [
+      {
+        "name": "Monitors",
+        "description": "A read-only role. Cannot modify any resource."
+      },
+      {
+        "name": "Operators",
+        "description": "Monitor permissions, plus can modify runtime state, but cannot modify anything that ends up in the persistent configuration. Could, for example, restart a server."
+      },
+      {
+        "name": "Administrators",
+        "description": "Full access to everything. Can modify anything, including persistent configuration."
+      },
+      {
+        "name": "Developers",
+        "description": "Can modify anything, but cannot modify persistent configuration."
+      },
+      {
+        "name": "Auditors",
+        "description": "Can read everything, but cannot modify anything."
+      },
+      {
+        "name": "Users",
+        "description": "Can read and modify their own resources, but cannot modify anything else."
+      },
+      {
+        "name": "Guests",
+        "description": "Can read everything, but cannot modify anything."
+      },
+      {
+        "name": "SuperUsers",
+        "description": "Can do anything, including modifying persistent configuration."
+      },
+      {
+        "name": "Maintainers",
+        "description": "Operator permissions, plus can modify the persistent configuration."
+      },
+      {
+        "name": "Deployers",
+        "description": "Like a Maintainer, but with permission to modify persistent configuration constrained to resources that are considered to be 'application resources'. A deployment is an application resource. The messaging server is not. Items like datasources and JMS destinations are not considered to be application resources by default, but this is configurable."
+      }
+    ]
+  }

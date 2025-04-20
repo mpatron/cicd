@@ -7,6 +7,31 @@
     - role: freeipa.ansible_freeipa.ipaserver
       state: present
 
+  tasks:
+    - freeipa.ansible_freeipa.ipauser:
+        ipaadmin_password: "HelloWorld1"
+        name: mpatron
+        first: Mickael
+        last: Patron
+        title: "Mr"
+        displayname: "Mickael Patron"
+        password: "HelloWorld1"
+        update_password: on_create
+    - name: Include users_present.json
+      include_vars:
+        file: users_present.json
+    - name: Users present
+      freeipa.ansible_freeipa.ipauser:
+        ipaadmin_password: "HelloWorld1"
+        users: "{{ users_present }}"
+    - name: Include groups_present.json
+      include_vars:
+        file: groups_present.json
+    - name: Groups present
+      freeipa.ansible_freeipa.ipagroup:
+        ipaadmin_password: "HelloWorld1"
+        groups: "{{ groups_present }}"
+
 - name: Install IPA clients
   hosts: ipaclients
   become: true
@@ -14,3 +39,4 @@
   roles:
     - role: freeipa.ansible_freeipa.ipaclient
       state: present
+

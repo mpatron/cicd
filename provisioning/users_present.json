@@ -1,0 +1,46 @@
+{
+    "users_present": [
+      {
+        "name": "alice",
+        "first": "Alice",
+        "last": "Savoie",
+        "email": "alice@jobjects.net"
+      },
+      {
+        "name": "bob",
+        "first": "Bob",
+        "last": "Marley",
+        "email": "bob@jobjects.net"
+      },
+      {
+        "name": "carole",
+        "first": "Carole",
+        "last": "Rousseau",
+        "email": "carole@jobjects.net"
+      },
+      {
+        "name": "david",
+        "first": "David",
+        "last": "Beckham",
+        "email": "david@jobjects.net"
+      },
+      {
+        "name": "eve",
+        "first": "Eve",
+        "last": "Lavigne",
+        "email": "eve@jobjects.net"
+      },
+      {
+        "name": "franck",
+        "first": "Franck",
+        "last": "Leroy",
+        "email": "eve@jobjects.net"
+      },
+      {
+        "name": "george",
+        "first": "George",
+        "last": "Washington",
+        "email": "george@jobjects.net"
+      }
+    ]
+  }
