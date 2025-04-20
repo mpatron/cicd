@@ -36,6 +36,7 @@ source ~/venv/bin/activate
 ansible-galaxy install --force --ignore-certs --role-file requirements.yml
 pip install -r requirements.txt
 vagrant up --provision --provider=libvirt
+cd provisioning && ansible-playbook --inventory inventories/staging provision-playbook.yml
 ~~~
 
 ## Ceph install

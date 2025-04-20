@@ -1,0 +1,16 @@
+---
+- name: Playbook to configure IPA servers
+  hosts: ipaserver
+  become: true
+
+  roles:
+  - role: ipaserver
+    state: present
+
+- name: Install IPA clients
+  hosts: ipaclients
+  become: true
+
+  roles:
+  - role: ipaclient
+    state: present

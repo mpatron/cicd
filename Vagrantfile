@@ -23,30 +23,45 @@ Vagrant.configure("2") do |config|
     libvirt.cpus = VM_CPU
     libvirt.memory = VM_RAM
   end
+
   config.vm.define "idm" do |idm|
     idm.vm.hostname = "idm.#{DOMAIN}"
     idm.vm.network "private_network", :ip => "#{IP_BASE}.110"
-    idm.vm.provision "ansible" do |ansible|
-      ansible.verbose = false # default=true ou "-vvv" pour debug
-      # ansible.limit = "all"
-      ansible.playbook = "provision-playbook.yml"
-      ansible.extra_vars = {
-        "vm_count": VM_COUNT,
-        "DOMAIN": DOMAIN
-      }
-    end
   end
   config.vm.define "gitlab" do |gitlab|
     gitlab.vm.hostname = "gitlab.#{DOMAIN}"
     gitlab.vm.network "private_network", :ip => "#{IP_BASE}.111"
-    gitlab.vm.provision "ansible" do |ansible|
-      ansible.verbose = false # default=true ou "-vvv" pour debug
-      # ansible.limit = "all"
-      ansible.playbook = "provision-playbook.yml"
-      ansible.extra_vars = {
-        "vm_count": VM_COUNT,
-        "DOMAIN": DOMAIN
-      }
-    end
   end
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.verbose = false # default=true ou "-vvv" pour debug
+    # ansible.limit = "all"
+    ansible.playbook = "provisioning/provision-playbook.yml"
+    ansible.extra_vars = {
+      "vm_count": VM_COUNT,
+      "DOMAIN": DOMAIN
+    }
+    ansible.groups = {
+      "ipaserver" => ["idm.jobjects.net"],
+      "ipaclients" => ["gitlab.jobjects.net"],
+      "all_groups:children" => ["ipaserver", "ipaclients"],
+      "all_groups:vars" => { "ansible_user" => "vagrant",
+                            "ansible_password" => "vagrant",
+                            "ansible_become" => true,
+                            "ansible_python_interpreter" => "/usr/bin/python3",
+                            "ansible_connection" => "ssh",
+                            "ansible_ssh_common_args" => "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null",
+                            "ipaadmin_password" => "HelloWorld1",
+                            "ipadm_password" => "HelloWorld1",
+                            "ipaserver_domain" => "jobjects.net",
+                            "ipaserver_realm" => "JOBJECTS.NET"
+                            }, 
+      "ipaserver:vars" => { "ipaserver_setup_dns" => true,
+                            "ipaserver_auto_forwarders" => true},
+      "ipaclients:vars" => { "ipaclient_server" => "idm.jobjects.net",
+                            "ipaclient_configure_dns_resolver" => true},
+    }
+    # ansible.inventory_path = "provisioning/inventories/staging"
+  end
+
 end
