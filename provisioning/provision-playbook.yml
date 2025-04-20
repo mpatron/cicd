@@ -1,6 +1,6 @@
 ---
 - name: Playbook to configure VM libvirt
-  hosts: all
+  hosts: ipaserver
   become: true
 
   vars:
@@ -15,9 +15,7 @@
     - role: geerlingguy.swap
       vars:
         swap_file_state: "absent"
-    - role: ipaclients
-      state: present
-    - role: ipaserver
+    - role: freeipa.ansible_freeipa.ipaserver
       state: present
 
   tasks:

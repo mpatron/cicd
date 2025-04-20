@@ -4,13 +4,13 @@
   become: true
 
   roles:
-  - role: ipaserver
-    state: present
+    - role: freeipa.ansible_freeipa.ipaserver
+      state: present
 
 - name: Install IPA clients
   hosts: ipaclients
   become: true
 
   roles:
-  - role: ipaclient
-    state: present
+    - role: freeipa.ansible_freeipa.ipaclient
+      state: present

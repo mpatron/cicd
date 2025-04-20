@@ -59,7 +59,8 @@ Vagrant.configure("2") do |config|
       "ipaserver:vars" => { "ipaserver_setup_dns" => true,
                             "ipaserver_auto_forwarders" => true},
       "ipaclients:vars" => { "ipaclient_server" => "idm.jobjects.net",
-                            "ipaclient_configure_dns_resolver" => true},
+                             "ipaclient_dns_servers" => ["idm.jobjects.net"],
+                             "ipaclient_configure_dns_resolver" => true},
     }
     # ansible.inventory_path = "provisioning/inventories/staging"
   end

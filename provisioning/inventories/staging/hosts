@@ -38,4 +38,6 @@ all:
         ipaclient_domain: "jobjects.net"
         ipaclient_realm: "JOBJECTS.NET"
         ipaclient_server: "idm.jobjects.net"
+        ipaclient_dns_servers:
+          - "192.168.56.110"
         ipaclient_configure_dns_resolver: yes
