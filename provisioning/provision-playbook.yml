@@ -1,6 +1,6 @@
 ---
 - name: Playbook to configure VM libvirt
-  hosts: ipaserver
+  hosts: all
   become: true
 
   vars:
@@ -15,8 +15,6 @@
     - role: geerlingguy.swap
       vars:
         swap_file_state: "absent"
-    - role: freeipa.ansible_freeipa.ipaserver
-      state: present
 
   tasks:
     - name: Printing Fact Variables
