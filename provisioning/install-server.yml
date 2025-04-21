@@ -79,7 +79,8 @@
         gitlab_ldap_enabled: true
         gitlab_ldap_host: "idm.jobjects.net"
         gitlab_ldap_port: "636"
-        gitlab_ldap_method: "plain"
+        gitlab_ldap_uid: "uid"
+        gitlab_ldap_method: "tls"
         gitlab_ldap_bind_dn: "uid=gitlab,cn=users,cn=accounts,dc=jobjects,dc=net"
         gitlab_ldap_password: "{{ ipaadmin_password }}"
         gitlab_ldap_base: "cn=users,cn=accounts,dc=jobjects,dc=net"
