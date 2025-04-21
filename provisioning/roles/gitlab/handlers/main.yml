@@ -1,11 +1,11 @@
 ---
 # handlers file for gitlab
-- name: restart gitlab
-  systemd:
+- name: Restart gitlab
+  ansible.builtin.systemd:
     name: gitlab-runsvdir
     state: restarted
 
 - name: Reload firewalld
-  service:
+  ansible.builtin.service:
     name: firewalld
     state: reloaded

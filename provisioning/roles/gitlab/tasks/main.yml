@@ -1,7 +1,7 @@
 ---
 # tasks file for GitLab
 - name: Install necessary packages
-  dnf:
+  ansible.builtin.dnf:
     name:
       - curl
       - policycoreutils
@@ -12,7 +12,7 @@
     state: present
 
 - name: Enable and start SSH service
-  systemd:
+  ansible.builtin.systemd:
     name: sshd
     state: started
     enabled: true
@@ -24,44 +24,43 @@
   changed_when: false
 
 - name: Create SSL directory
-  file:
+  ansible.builtin.file:
     path: /etc/gitlab/ssl
     state: directory
     mode: '0755'
 
 - name: Generate private key
   community.crypto.openssl_privatekey:
-    path: "/etc/gitlab/ssl/{{ fqdn }}.key"
+    path: "/etc/gitlab/ssl/{{ gitlab_fqdn }}.key"
     type: RSA
     size: 2048
     state: present
 
 - name: Generate self-signed certificate and private key
-  shell: |
+  ansible.builtin.shell: |
     openssl req -x509 -nodes -days 365 \
       -newkey rsa:2048 \
-      -keyout /etc/gitlab/ssl/{{ fqdn }}.key \
-      -out /etc/gitlab/ssl/{{ fqdn }}.crt \
-      -subj "/CN={{ fqdn }}"
-
+      -keyout /etc/gitlab/ssl/{{ gitlab_fqdn }}.key \
+      -out /etc/gitlab/ssl/{{ gitlab_fqdn }}.crt \
+      -subj "/CN={{ gitlab_fqdn }}"
   args:
-    creates: "/etc/gitlab/ssl/{{ fqdn }}.crt"
+    creates: "/etc/gitlab/ssl/{{ gitlab_fqdn }}.crt"
 
 # Install GitLab CE
 - name: Install GitLab CE
-  dnf:
+  ansible.builtin.dnf:
     name: gitlab-ce
     state: latest
 
 - name: Reconfigure GitLab
-  command: gitlab-ctl reconfigure
+  ansible.builtin.command: gitlab-ctl reconfigure
   async: 10
   poll: 0
 
 - name: Open firewall ports 80 and 443
-  firewalld:
+  ansible.posix.firewalld:
     port: "{{ item }}"
-    permanent: yes
+    permanent: true
     state: enabled
   with_items:
     - "80/tcp"     # HTTP port
@@ -70,7 +69,7 @@
     - Reload firewalld
 
 - name: Set SELinux boolean for httpd_can_network_connect
-  command: sudo setsebool -P httpd_can_network_connect 1
+  ansible.builtin.command: sudo setsebool -P httpd_can_network_connect 1
 
 - name: Set SELinux boolean for nis_enabled
-  command: sudo setsebool -P nis_enabled 1
+  ansible.builtin.command: sudo setsebool -P nis_enabled 1
