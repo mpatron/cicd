@@ -1,0 +1,76 @@
+---
+# tasks file for GitLab
+- name: Install necessary packages
+  dnf:
+    name:
+      - curl
+      - policycoreutils
+      - openssh-server
+      - perl
+      - python3-cryptography
+      - postfix
+    state: present
+
+- name: Enable and start SSH service
+  systemd:
+    name: sshd
+    state: started
+    enabled: true
+
+# Configure GitLab Repository
+- name: Configure GitLab Repository
+  ansible.builtin.shell: |
+    curl -sS https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | sudo bash
+  changed_when: false
+
+- name: Create SSL directory
+  file:
+    path: /etc/gitlab/ssl
+    state: directory
+    mode: '0755'
+
+- name: Generate private key
+  community.crypto.openssl_privatekey:
+    path: "/etc/gitlab/ssl/{{ fqdn }}.key"
+    type: RSA
+    size: 2048
+    state: present
+
+- name: Generate self-signed certificate and private key
+  shell: |
+    openssl req -x509 -nodes -days 365 \
+      -newkey rsa:2048 \
+      -keyout /etc/gitlab/ssl/{{ fqdn }}.key \
+      -out /etc/gitlab/ssl/{{ fqdn }}.crt \
+      -subj "/CN={{ fqdn }}"
+
+  args:
+    creates: "/etc/gitlab/ssl/{{ fqdn }}.crt"
+
+# Install GitLab CE
+- name: Install GitLab CE
+  dnf:
+    name: gitlab-ce
+    state: latest
+
+- name: Reconfigure GitLab
+  command: gitlab-ctl reconfigure
+  async: 10
+  poll: 0
+
+- name: Open firewall ports 80 and 443
+  firewalld:
+    port: "{{ item }}"
+    permanent: yes
+    state: enabled
+  with_items:
+    - "80/tcp"     # HTTP port
+    - "443/tcp"    # HTTPS/SSL port for Apache
+  notify:
+    - Reload firewalld
+
+- name: Set SELinux boolean for httpd_can_network_connect
+  command: sudo setsebool -P httpd_can_network_connect 1
+
+- name: Set SELinux boolean for nis_enabled
+  command: sudo setsebool -P nis_enabled 1

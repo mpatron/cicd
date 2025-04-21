@@ -10,7 +10,7 @@
   tasks:
     # Install IPA Groupes
     - name: Include groups_present.json
-      include_vars:
+      ansible.builtin.include_vars:
         file: groups_present.json
     - name: Groups present
       freeipa.ansible_freeipa.ipagroup:
@@ -18,14 +18,15 @@
         groups: "{{ groups_present }}"
     # Install IPA Users
     - name: Include users_present.json
-      include_vars:
+      ansible.builtin.include_vars:
         file: users_present.json
     - name: Users present
       freeipa.ansible_freeipa.ipauser:
         ipaadmin_password: "{{ ipaadmin_password }}"
         users: "{{ users_present }}"
     # Add me
-    - freeipa.ansible_freeipa.ipauser:
+    - name: Create me on FreeIPA
+      freeipa.ansible_freeipa.ipauser:
         ipaadmin_password: "{{ ipaadmin_password }}"
         name: mpatron
         first: Mickael
@@ -34,13 +35,15 @@
         displayname: "Mickael Patron"
         password: "{{ ipaadmin_password }}"
         update_password: on_create
-    - freeipa.ansible_freeipa.ipagroup:
+    - name: Add to me the admins group
+      freeipa.ansible_freeipa.ipagroup:
         ipaadmin_password: "{{ ipaadmin_password }}"
         name: admins
         action: member
         user:
         - mpatron        
-    - freeipa.ansible_freeipa.ipagroup:
+    - name: Add to me the wheel group
+      freeipa.ansible_freeipa.ipagroup:
         ipaadmin_password: "{{ ipaadmin_password }}"
         name: wheel
         action: member
@@ -54,5 +57,7 @@
 
   roles:
     - role: freeipa.ansible_freeipa.ipaclient
+      state: present
+    - role: gitlab
       state: present
 
