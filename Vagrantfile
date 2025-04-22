@@ -1,6 +1,6 @@
 # -*- mode: ruby -*-
 
-VM_RAM = "4096" # 1024 2048 3072 4096 6144 8192
+VM_RAM = "6144" # 1024 2048 3072 4096 6144 8192
 VM_CPU = 2
 # IMAGE = "fedora/41-cloud-base" # Ne fonctione pas avec fédora 41
 IMAGE = "almalinux/9"
