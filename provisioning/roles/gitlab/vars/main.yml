@@ -1,4 +1,4 @@
 ---
 # vars file for gitlab
-gitlab_external_url: 'https://gitlab.jobjects.net'
-gitlab_fqdn: 'gitlab.jobjects.net'
+gitlab_external_url: 'https://scm.jobjects.net'
+gitlab_fqdn: 'scm.jobjects.net'

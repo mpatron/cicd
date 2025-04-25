@@ -4,43 +4,57 @@
         "name": "alice",
         "first": "Alice",
         "last": "Savoie",
-        "email": "alice@jobjects.net"
+        "email": "alice@jobjects.net",
+        "password": "HelloWorld1!",
+        "update_password": "on_create"
       },
       {
         "name": "bob",
         "first": "Bob",
         "last": "Marley",
-        "email": "bob@jobjects.net"
+        "email": "bob@jobjects.net",
+        "password": "HelloWorld1!",
+        "update_password": "on_create"
       },
       {
         "name": "carole",
         "first": "Carole",
         "last": "Rousseau",
-        "email": "carole@jobjects.net"
+        "email": "carole@jobjects.net",
+        "password": "HelloWorld1!",
+        "update_password": "on_create"
       },
       {
         "name": "david",
         "first": "David",
         "last": "Beckham",
-        "email": "david@jobjects.net"
+        "email": "david@jobjects.net",
+        "password": "HelloWorld1!",
+        "update_password": "on_create"
       },
       {
         "name": "eve",
         "first": "Eve",
         "last": "Lavigne",
-        "email": "eve@jobjects.net"
+        "email": "eve@jobjects.net",
+        "password": "HelloWorld1!",
+        "update_password": "on_create"
       },
       {
         "name": "franck",
         "first": "Franck",
         "last": "Leroy",
-        "email": "eve@jobjects.net"
+        "email": "eve@jobjects.net",
+        "password": "HelloWorld1!",
+        "update_password": "on_create"
       },
       {
         "name": "george",
         "first": "George",
         "last": "Washington",
-        "email": "george@jobjects.net"
+        "email": "george@jobjects.net",
+        "password": "HelloWorld1!",
+        "update_password": "on_create"
       }
     ]
   }

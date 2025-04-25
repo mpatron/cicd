@@ -6,6 +6,8 @@ roles:
     version: "1.2.0"
   - name: geerlingguy.gitlab
     version: "3.2.0"
+  - name: roles-ansible.gitea
+    version: "v3.6.2"
 collections:
   - name: freeipa.ansible_freeipa
     source: https://galaxy.ansible.com

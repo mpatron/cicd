@@ -6,7 +6,7 @@ all:
       ansible_host: 192.168.56.110
       ansible_ssh_user: vagrant
       ansible_ssh_pass: vagrant
-    gitlab.jobjects.net:
+    scm.jobjects.net:
       ansible_host: 192.168.56.111
       ansible_ssh_user: vagrant
       ansible_ssh_pass: vagrant
@@ -18,26 +18,15 @@ all:
     # ansible_ssh_pass: "{{ vault_localadmin_password }}"
     # ansible_become_pass: "{{ vault_localadmin_password }}"
     ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+    generic_password: "HelloWorld1"
+    generic_domain: "jobjects.net"
+    generic_realm: "JOBJECTS.NET"
   children:
     ipaserver:
       hosts:
         idm.jobjects.net:
       vars:
-        ipaadmin_password: "HelloWorld1"
-        ipadm_password: "HelloWorld1"
-        ipaserver_domain=: "jobjects.net"
-        ipaserver_realm: "JOBJECTS.NET"
-        ipaserver_setup_dns: yes
-        ipaserver_auto_forwarders: yes
     ipaclients:
       hosts:
-        gitlab.jobjects.net:
+        scm.jobjects.net:
       vars:
-        ipaadmin_password: "HelloWorld1"
-        ipadm_password: "HelloWorld1"
-        ipaclient_domain: "jobjects.net"
-        ipaclient_realm: "JOBJECTS.NET"
-        ipaclient_server: "idm.jobjects.net"
-        ipaclient_dns_servers:
-          - "192.168.56.110"
-        ipaclient_configure_dns_resolver: yes

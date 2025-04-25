@@ -73,7 +73,7 @@
     - role: geerlingguy.gitlab
       state: present
       vars:
-        gitlab_domain: gitlab.jobjects.net
+        gitlab_domain: scm.jobjects.net
         gitlab_external_url: "https://{{ gitlab_domain }}/"
         # LDAP Configuration.
         gitlab_ldap_enabled: true

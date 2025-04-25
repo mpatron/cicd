@@ -28,9 +28,9 @@ Vagrant.configure("2") do |config|
     idm.vm.hostname = "idm.#{DOMAIN}"
     idm.vm.network "private_network", :ip => "#{IP_BASE}.110"
   end
-  config.vm.define "gitlab" do |gitlab|
-    gitlab.vm.hostname = "gitlab.#{DOMAIN}"
-    gitlab.vm.network "private_network", :ip => "#{IP_BASE}.111"
+  config.vm.define "scm" do |scm|
+    scm.vm.hostname = "scm.#{DOMAIN}"
+    scm.vm.network "private_network", :ip => "#{IP_BASE}.111"
   end
 
   config.vm.provision "ansible" do |ansible|
@@ -43,7 +43,7 @@ Vagrant.configure("2") do |config|
     }
     ansible.groups = {
       "ipaserver" => ["idm.jobjects.net"],
-      "ipaclients" => ["gitlab.jobjects.net"],
+      "ipaclients" => ["scm.jobjects.net"],
       "all_groups:children" => ["ipaserver", "ipaclients"],
       "all_groups:vars" => { "ansible_user" => "vagrant",
                             "ansible_password" => "vagrant",
