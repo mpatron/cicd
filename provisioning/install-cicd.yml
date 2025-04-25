@@ -83,6 +83,8 @@
       freeipa.ansible_freeipa.ipauser:
         ipaadmin_password: "{{ generic_password }}"
         users: "{{ users_present }}"
+        password: "{{ generic_password }}"
+        update_password: "on_create"
 
 - name: Install IPA clients
   hosts: scm.jobjects.net
@@ -101,26 +103,39 @@
         ipaclient_configure_dns_resolver: true
         ipaclient_dns_servers: "192.168.56.110"
   tasks:
-    # Add scm
-    - name: Create scm account on FreeIPA
-      freeipa.ansible_freeipa.ipauser:
-        ipaadmin_password: "{{ generic_password }}"
-        name: scm
-        first: Source
-        last: ControlManager
-        title: "Mr"
-        displayname: "SCM"
-        password: "{{ generic_password }}"
-        update_password: on_create
-    - name: Essais de connection
-      become: true
-      become_user: scm
-      ansible.builtin.shell: id
+#    # Add scm
+#    - name: Create scm account on FreeIPA
+#      freeipa.ansible_freeipa.ipauser:
+#        ipaadmin_password: "{{ generic_password }}"
+#        name: scm
+#        first: Source
+#        last: ControlManager
+#        title: "Mr"
+#        displayname: "SCM"
+#        password: "{{ generic_password }}"
+#        update_password: on_create
+#    - name: Essais de connection
+#      become: true
+#      become_user: scm
+#      ansible.builtin.shell: id
 
 - name: Install SCM
   hosts: scm.jobjects.net
   become: true
   pre_tasks:
+    - name: Adding users scm
+      ansible.builtin.user:
+        name: "scm"
+        shell: "/bin/bash"
+        password: "{{ generic_password | password_hash('sha512') }}" # NE FONCTIONNE PAS CAR PAS DE passlib
+        create_home: true
+        force: true
+        update_password: on_create
+        # echo $(mkpasswd --method=sha-512 'demo')
+        # password: "$6$DkvtO7X1xjcHZ0LH$.1n5ahdjK1gZ8z7H6K0q6l9LU3Qte7CLpk9CVOTfpgdHq0M/o5aSyMlyXi49GPfzhQV2sEC0x2ald97o06UvW1"
+        groups: "wheel"
+        append: true
+
   roles:
     - role: roles-ansible.gitea
       tags: gitea
