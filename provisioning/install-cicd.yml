@@ -143,6 +143,7 @@
       vars:
         gitea_fqdn: "scm.jobjects.net"
         gitea_root_url: "http://scm.jobjects.net"
+        gitea_http_listen: "0.0.0.0"
         gitea_protocol: http
         gitea_start_ssh: true
         gitea_user: scm
