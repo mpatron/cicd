@@ -87,4 +87,4 @@ mickael@deborah:~/Documents/cicd/virt$ sudo virsh net-list --all
 
 
 
-virt-install --name fedora-silverblue --memory 4096 --vcpus=2 --location=/home/mickael/Téléchargements/Fedora-Silverblue-ostree-x86_64-41-1.4.iso  --network bridge=nm-bridge  --graphics=vnc --console pty,target_type=serial -v
+virt-install --name fedora-silverblue --memory 4096 --vcpus=2 --location=/home/mickael/Téléchargements/Fedora-Silverblue-ostree-x86_64-41-1.4.iso  --network network=default --graphics=vnc --console pty,target_type=serial -v

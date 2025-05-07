@@ -4,6 +4,7 @@ VM_RAM = "6144" # 1024 2048 3072 4096 6144 8192
 VM_CPU = 2
 # IMAGE = "fedora/41-cloud-base" # Ne fonctione pas avec fédora 41
 IMAGE = "almalinux/9"
+# IMAGE = "alvistack/fedora-42"
 # IMAGE = "generic/ubuntu2004"
 # IMAGE = "generic/alma9"
 DOMAIN = "jobjects.net"
@@ -16,12 +17,19 @@ Vagrant.configure("2") do |config|
   config.vm.boot_timeout = 600 # default (secondes) is 300
 
   config.vm.provider :libvirt do |libvirt|
-    # Use QEMU session instead of system connection
-    libvirt.qemu_use_session = false
+    libvirt.cpu_mode = "host-passthrough"
+    libvirt.cpus = VM_CPU
+    libvirt.disk_bus = "virtio"
+    libvirt.disk_driver :cache => "writeback"
+    libvirt.driver = "kvm"
+    libvirt.memory = VM_RAM
+    libvirt.memorybacking :access, :mode => "shared"
     # Nested virtualization allows you to run a virtual machine (VM) inside another VM
     libvirt.nested = true
-    libvirt.cpus = VM_CPU
-    libvirt.memory = VM_RAM
+    libvirt.nic_model_type = "virtio"
+    # Use QEMU session instead of system connection
+    libvirt.qemu_use_session = false
+    libvirt.video_type = "virtio"
   end
 
   config.vm.define "idm" do |idm|
