@@ -42,8 +42,9 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provision "ansible" do |ansible|
-    ansible.verbose = false # default=true ou "-vvv" pour debug
-    # ansible.limit = "all"
+    ansible.verbose = true # default=true ou "-vvv" pour debug
+    ansible.limit = "all"
+    ansible.inventory_path = "provisioning/inventories/staging"
     ansible.playbook = "provisioning/provision-playbook.yml"
     ansible.extra_vars = {
       "vm_count": VM_COUNT,
@@ -70,7 +71,6 @@ Vagrant.configure("2") do |config|
                              "ipaclient_dns_servers" => ["idm.jobjects.net"],
                              "ipaclient_configure_dns_resolver" => true},
     }
-    # ansible.inventory_path = "provisioning/inventories/staging"
   end
 
 end
