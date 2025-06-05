@@ -12,7 +12,7 @@
     - role: ansible_role_libvirt_client_configure
       vars:
         ansible_role_libvirt_client_configure_vm_count: "{{ vm_count }}"
-    - role: geerlingguy.swap
+    - role: mpatron.swap
       vars:
         swap_file_state: "absent"
 

@@ -2,8 +2,8 @@
 # ansible-galaxy collection install -r requirements.yml --ignore-certs
 # ansible-galaxy role install -r requirements.yml  --ignore-certs
 roles:
-  - name: geerlingguy.swap
-    version: "1.2.0"
+  - name: mpatron.swap
+    version: "1.2.1"
   - name: geerlingguy.gitlab
     version: "3.2.0"
   - name: roles-ansible.gitea
