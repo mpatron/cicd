@@ -57,6 +57,7 @@
     name: '*'
     state: latest
     update_only: true
+# On ne peut pas arbitrairement supprimer les paquets java, car certains sont requis par le système, comme freeipa
 - name: Install a list of packages no present
   ansible.builtin.dnf:
     name: "{{ packages }}"
@@ -75,6 +76,7 @@
       - java-21-openjdk-headless
       - java-21-openjdk-devel
       - java-21-openjdk
+  when: ansible_role_libvirt_client_configure_delete_all_vm == true
 - name: Install a list of packages with a list variable
   ansible.builtin.dnf:
     name: "{{ packages }}"
@@ -120,12 +122,13 @@
 ## Keep facts to stop firewall to down
 - name: Recupération du service facts
   ansible.builtin.service_facts:
+  when: ansible_role_libvirt_client_configure_desactivate_firewall == true
 - name: Stop service firewalld, if started
   ansible.builtin.service:
     name: firewalld
     state: stopped
     enabled: false
-  when: ansible_facts.services['firewalld.service'] is defined
+  when: (ansible_role_libvirt_client_configure_desactivate_firewall == true) and (ansible_facts.services['firewalld.service'] is defined)
 # User admin
 # sudo bash -c "printf '%s\n%s\n' 'hadoop' 'hadoop' | passwd hadoop"
 # printf '%s\n' "hadoop" | mkpasswd -s --method=sha-512
@@ -134,10 +137,12 @@
   ansible.builtin.user:
     name: "{{ ansible_role_libvirt_client_configure_adminuser }}"
     shell: "/bin/bash"
-    password: "{{ ansible_role_libvirt_client_configure_adminuser | password_hash('sha512') }}" # NE FONCTIONNE PAS CAR PAS DE passlib
+    # NE FONCTIONNE PAS si pas de passlib, alors faire 'pip install -r requirements.txt'
+    password: "{{ ansible_role_libvirt_client_configure_adminuser | password_hash('sha512') }}"
     update_password: on_create
-    # echo $(mkpasswd --method=sha-512 'demo')
-    # password: "$6$DkvtO7X1xjcHZ0LH$.1n5ahdjK1gZ8z7H6K0q6l9LU3Qte7CLpk9CVOTfpgdHq0M/o5aSyMlyXi49GPfzhQV2sEC0x2ald97o06UvW1"
+    # Ou utiliser mkpasswd
+    # echo $(mkpasswd --method=sha-512 'sysadmin')
+    # password: "$6$bIbHZVlWmxCV6jM4$TMU7iWP8f8WUy6LBh1LOc33zpeiR.K6p.HTHFabfTVcFPH9ziCwDg1sBY4rT9STf8ErYNwMb8rMyBSAWzVRT0."
     groups: "wheel"
     append: true
 - name: Sudoers nopassword for {{ ansible_role_libvirt_client_configure_adminuser }}

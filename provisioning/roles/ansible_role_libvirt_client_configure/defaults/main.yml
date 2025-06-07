@@ -2,3 +2,5 @@
 # defaults file for ansible_role_libvirt_client_configure
 ansible_role_libvirt_client_configure_adminuser: sysadmin
 ansible_role_libvirt_client_configure_vm_count: 1
+ansible_role_libvirt_client_configure_delete_all_vm: false
+ansible_role_libvirt_client_configure_desactivate_firewall: false

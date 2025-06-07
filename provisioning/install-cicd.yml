@@ -10,16 +10,18 @@
     - role: freeipa.ansible_freeipa.ipaserver
       state: present
       vars:
+        ipaserver_domain: "{{ generic_domain }}"
+        ipaserver_realm: "{{ generic_realm }}"
+        ipaserver_ip_addresses: "192.168.56.110"
+        ipaadmin_password: "{{ generic_password }}"
+        ipadm_password: "{{ generic_password }}"
         ipaserver_setup_dns: true
-        ipaserver_auto_forwarders: true
         ipaserver_forwarders:
           - 8.8.8.8
           - 1.1.1.1
-        ipaadmin_password: "{{ generic_password }}"
-        ipadm_password: "{{ generic_password }}"
-        ipaserver_domain: "{{ generic_domain }}"
-        ipaserver_realm: "{{ generic_realm }}"
-
+        # ipaserver_reverse_zones: "56.168.192.in-addr.arpa"
+        ipaserver_reverse_zones: "192.168.56.0/24"
+        ipaserver_setup_kra: true
   tasks:
     - name: Set IPA domain config
       freeipa.ansible_freeipa.ipaconfig:
@@ -102,7 +104,66 @@
         ipaclient_realm: "{{ generic_realm }}"
         ipaclient_configure_dns_resolver: true
         ipaclient_dns_servers: "192.168.56.110"
+        ipaclient_force_join: yes
   tasks:
+    - name: Ensure service HTTP/scm.jobjects.net is present
+      freeipa.ansible_freeipa.ipaservice:
+        ipaadmin_password: "{{ generic_password }}"
+        services:
+          - name: HTTP/scm.jobjects.net
+            host: scm.jobjects.net
+    - name: Create directory /etc/ssl/private if does not exist
+      ansible.builtin.file:
+        path: /etc/ssl/private
+        state: directory
+        owner: "root"
+        group: "root"
+        mode: '0755'
+    - name: Create directory /etc/ssl/csr if does not exist
+      ansible.builtin.file:
+        path: /etc/ssl/csr
+        state: directory
+        owner: "root"
+        group: "root"
+        mode: '0755'
+    - name: Generate an OpenSSL private key with the default values (4096 bits, RSA)
+      community.crypto.openssl_privatekey:
+        path: /etc/ssl/private/http.scm.jobjects.net.pem
+    - name: Generate an OpenSSL Certificate Signing Request
+      community.crypto.openssl_csr:
+        path: "/etc/ssl/csr/http.scm.jobjects.net.csr"
+        privatekey_path: "/etc/ssl/private/http.scm.jobjects.net.pem"
+        common_name: "scm.jobjects.net"
+    # This task is used to request a certificate for the web server
+    # It requires a CSR file to be present on the client
+    # The CSR file can be generated using openssl or any other tool
+    # The CSR file should be placed in /etc/pki/tls/csr/http.scm.jobjects.net.csr
+    # The certificate will be stored in /etc/pki/tls/certs/http.scm.jobjects.net.crt
+    - name: Request a certificate for a web server gitea
+      freeipa.ansible_freeipa.ipacert:
+        ipaadmin_password: "{{ generic_password }}"
+        state: requested
+        # csr: "{{ lookup('ansible.builtin.file', '/etc/ssl/csr/http.scm.jobjects.net.csr') }}"
+        csr_file: "/etc/ssl/csr/http.scm.jobjects.net.csr"
+        certificate_out: "/etc/ssl/certs/http.scm.jobjects.net.crt"
+        principal: HTTP/scm.jobjects.net
+      register: cert
+    - name: Droit sur la clef privé de http-gitea
+      ansible.builtin.file:
+        path: /etc/ssl/private/http.scm.jobjects.net.pem
+        state: file
+        owner: "root"
+        group: "root"
+        mode: '0644'
+    - name: Droit sur le certificat de http-gitea
+      ansible.builtin.file:
+        path: /etc/ssl/certs/http.scm.jobjects.net.crt
+        state: file
+        owner: "root"
+        group: "root"
+        mode: '0644'
+
+      # Voir la privé, la request et le certificat dans 'ls -lah /etc/ssl/{private,csr,certs/}''
 #    # Add scm
 #    - name: Create scm account on FreeIPA
 #      freeipa.ansible_freeipa.ipauser:
@@ -122,19 +183,23 @@
 - name: Install SCM
   hosts: scm.jobjects.net
   become: true
-  pre_tasks:
-    - name: Adding users scm
-      ansible.builtin.user:
-        name: "scm"
-        shell: "/bin/bash"
-        password: "{{ generic_password | password_hash('sha512') }}" # NE FONCTIONNE PAS CAR PAS DE passlib
-        create_home: true
-        force: true
-        update_password: on_create
-        # echo $(mkpasswd --method=sha-512 'demo')
-        # password: "$6$DkvtO7X1xjcHZ0LH$.1n5ahdjK1gZ8z7H6K0q6l9LU3Qte7CLpk9CVOTfpgdHq0M/o5aSyMlyXi49GPfzhQV2sEC0x2ald97o06UvW1"
-        groups: "wheel"
-        append: true
+#  pre_tasks:
+#    - name: Adding users scm
+#      ansible.builtin.user:
+#        name: "scm"
+#        comment: "Source Control Manager"
+#        shell: "/bin/bash"
+#        # password: "{{ generic_password | password_hash('sha512') }}" # NE FONCTIONNE PAS si pas de passlib, alors faire 'pip install -r requirements.txt'
+#        password: "$6$cKKnf0znUttq3JkU$sXvFgTHyzmrtCU09Tv0QxcF6UqKmzyt1KYudDcQQy0VtPZWJMnBKOgq2FYRkZz0eJE1VqzvihV4tfPLg1P0ku."
+#        create_home: true
+#        home: "/home/scm"
+#        state: present
+#        # force: true
+#        # update_password: on_create
+#        # echo $(mkpasswd --method=sha-512 'HelloWorld1')
+#        # password: "$6$cKKnf0znUttq3JkU$sXvFgTHyzmrtCU09Tv0QxcF6UqKmzyt1KYudDcQQy0VtPZWJMnBKOgq2FYRkZz0eJE1VqzvihV4tfPLg1P0ku."
+#        groups: "wheel"
+#        append: true
 
   roles:
     - role: roles-ansible.gitea
@@ -142,9 +207,32 @@
       state: present
       vars:
         gitea_fqdn: "scm.jobjects.net"
-        gitea_root_url: "http://scm.jobjects.net"
+        gitea_root_url: "https://scm.jobjects.net:3000"
         gitea_http_listen: "0.0.0.0"
-        gitea_protocol: http
-        gitea_start_ssh: true
-        gitea_user: scm
+        gitea_protocol: https
+        gitea_ssh_port: 22 # assuming the host SSH server is running on port 22
+        gitea_user: git # otherwise there will be permission issues
+        gitea_start_ssh: false # to not start the built-in SSH server
+        gitea_enable_cors: true
+        gitea_enable_tls_certs: true
+        gitea_tls_cert_file: "/etc/ssl/certs/http.scm.jobjects.net.crt"
+        gitea_tls_key_file: "/etc/ssl/private/http.scm.jobjects.net.pem"
   tasks:
+    - name: Ensure service HTTP/scm.jobjects.net is present
+      freeipa.ansible_freeipa.ipaservice:
+        ipaadmin_password: "{{ generic_password }}"
+        services:
+          - name: HTTP/scm.jobjects.net
+            host: scm.jobjects.net
+#    - name: Ensure service SSH/scm.jobjects.net is present
+#      freeipa.ansible_freeipa.ipaservice:
+#        ipaadmin_password: "{{ generic_password }}"
+#        services:
+#          - name: SSH/scm.jobjects.net
+#            host: scm.jobjects.net
+#    - name: Ensure service GITEA/scm.jobjects.net is present
+#      freeipa.ansible_freeipa.ipaservice:
+#        ipaadmin_password: "{{ generic_password }}"
+#        services:
+#          - name: GITEA/scm.jobjects.net
+#            host: scm.jobjects.net
