@@ -31,7 +31,7 @@
     # Install IPA Groupes
     - name: Include groups_present.json
       ansible.builtin.include_vars:
-        file: groups_present.json
+        file: files/groups_present.json
     - name: Groups present
       freeipa.ansible_freeipa.ipagroup:
         ipaadmin_password: "{{ generic_password }}"
@@ -39,7 +39,7 @@
     # Install IPA Users
     - name: Include users_present.json
       ansible.builtin.include_vars:
-        file: users_present.json
+        file: files/users_present.json
     - name: Users present
       freeipa.ansible_freeipa.ipauser:
         ipaadmin_password: "{{ generic_password }}"
@@ -201,6 +201,7 @@
 #        groups: "wheel"
 #        append: true
 
+# Piste à explorer : https://gitea.com/gitea/helm-gitea#ldap-settings
   roles:
     - role: roles-ansible.gitea
       tags: gitea
