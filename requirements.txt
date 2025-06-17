@@ -1,2 +1,3 @@
 # pip install -r requirements.txt
 passlib==1.7.4
+netaddr==1.3.0

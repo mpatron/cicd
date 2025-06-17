@@ -227,3 +227,34 @@
         services:
           - name: HTTP/scm.{{ generic_domain }}
             host: scm.{{ generic_domain }}
+    - name: Configure LDAP in Gitea
+      blockinfile:
+        path: /etc/gitea/gitea.ini
+        block: |
+          [auth.ldap]
+          ENABLED = true
+          TYPE = ldap
+          NAME = IDM JOjects LDAP
+          HOST = idm.jobjects.net
+          PORT = 636
+          BIND_DN = uid=admin,cn=users,cn=accounts,dc=jobjects,dc=net
+          BIND_PASSWORD = HelloWorld1
+          USER_BASE = cn=users,cn=accounts,dc=jobjects,dc=net
+          FILTER = (objectClass=posixAccount)
+          ADMIN_FILTER = (memberOf=cn=admins,cn=groups,cn=accounts,dc=jobjects,dc=net)
+          ATTRIBUTE_USERNAME = uid
+          ATTRIBUTE_NAME = cn
+          ATTRIBUTE_MAIL = mail
+          ATTRIBUTE_IS_ADMIN = isAdmin
+          SKIP_TLS_VERIFY = true
+          USE_SSL = false
+          USE_TLS = true
+        owner: git
+        group: gitea
+        mode: '0640'
+        # sudo -u git /usr/local/bin/gitea admin user list --config /etc/gitea/gitea.ini
+
+    - name: Restart Gitea service
+      service:
+        name: gitea
+        state: restarted
