@@ -204,7 +204,10 @@
   hosts: scm.jobjects.net
   become: true
   roles:
+    # Utilisation de https://github.com/roles-ansible/ansible_role_gitea
+    # et https://github.com/go-gitea/gitea
     # Piste à explorer : https://gitea.com/gitea/helm-gitea#ldap-settings
+    # Avec https://github.com/s-hamann/ansible-gitea
     - role: roles-ansible.gitea
       tags: gitea
       state: present
@@ -234,21 +237,30 @@
           [auth.ldap]
           ENABLED = true
           TYPE = ldap
-          NAME = IDM JOjects LDAP
+          NAME = "LDAP (via BindDN)"
           HOST = idm.jobjects.net
           PORT = 636
+          SECURITY_PROTOCOL = ldaps
+          SKIP_TLS_VERIFY = true
           BIND_DN = uid=admin,cn=users,cn=accounts,dc=jobjects,dc=net
           BIND_PASSWORD = HelloWorld1
-          USER_BASE = cn=users,cn=accounts,dc=jobjects,dc=net
-          FILTER = (objectClass=posixAccount)
+          USER_SEARCH_BASE = cn=users,cn=accounts,dc=jobjects,dc=net
+          USER_FILTER = (&(objectClass=posixAccount)(|(uid=%[1]s)(mail=%[1]s)))
           ADMIN_FILTER = (memberOf=cn=admins,cn=groups,cn=accounts,dc=jobjects,dc=net)
-          ATTRIBUTE_USERNAME = uid
-          ATTRIBUTE_NAME = cn
-          ATTRIBUTE_MAIL = mail
+          USERNAME_ATTRIBUTE = uid
+          FIRSTNAME_ATTRIBUTE = givenName
+          SURNAME_ATTRIBUTE = sn
+          MAIL_ATTRIBUTE = mail
           ATTRIBUTE_IS_ADMIN = isAdmin
-          SKIP_TLS_VERIFY = true
-          USE_SSL = false
-          USE_TLS = true
+# La confuguration du LDAP en directe ne fonctionne pas encore
+# ~/gitea/cmd/admin_auth_ldap_tqest.go:53
+# "--enable-groups",
+# "--group-search-base-dn", "ou=group,dc=full-domain-bind,dc=org",
+# "--group-member-attribute", "memberUid",
+# "--group-user-attribute", "uid",
+# "--group-filter", "(|(cn=gitea_users)(cn=admins))",
+# "--group-team-map", `{"cn=my-group,cn=groups,dc=example,dc=org": {"MyGiteaOrganization": ["MyGiteaTeam1", "MyGiteaTeam2"]}}`,
+# "--group-team-map-removal",          
         owner: git
         group: gitea
         mode: '0640'
@@ -258,3 +270,36 @@
       service:
         name: gitea
         state: restarted
+#   A faire dans la vm scm.jobjects.net après un vagrant ssh scm
+#
+#    sudo -u git /usr/local/bin/gitea admin auth add-ldap \
+#    --config /etc/gitea/gitea.ini \
+#    --name 'ldap (via Bind DN) source full' \
+#    --security-protocol LDAPS  \
+#    --skip-tls-verify  \
+#    --host idm.jobjects.net  \
+#    --port 636  \
+#    --user-search-base cn=users,cn=accounts,dc=jobjects,dc=net  \
+#    --user-filter '(memberOf=cn=ipausers,cn=groups,cn=accounts,dc=jobjects,dc=net)'  \
+#    --admin-filter '(memberOf=cn=admins,cn=groups,cn=accounts,dc=jobjects,dc=net)' \
+#    --restricted-filter '(memberOf=cn=restricted-group,ou=example,dc=full-domain-bind,dc=org)'  \
+#    --username-attribute uid  \
+#    --firstname-attribute givenName  \
+#    --surname-attribute sn  \
+#    --email-attribute mail  \
+#    --bind-dn uid=admin,cn=users,cn=accounts,dc=jobjects,dc=net  \
+#    --bind-password 'HelloWorld1'  \
+#    --synchronize-users  \
+#    --page-size 99  \
+#    --enable-groups true \
+#    --group-search-base-dn cn=groups,cn=accounts,dc=jobjects,dc=net  \
+#    --group-member-attribute member  \
+#    --group-user-attribute uid  \
+#    --group-filter '(|(cn=gitea_users)(cn=admins))' \
+#    --group-team-map-removal true \
+#    --skip-local-2fa true
+#
+#    sudo -u git /usr/local/bin/gitea admin auth list \
+#    --config /etc/gitea/gitea.ini
+#
+#    Puis aller sur https://scm.jobjects.net:3000/-/admin/auths
