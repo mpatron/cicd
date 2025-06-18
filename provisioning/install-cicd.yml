@@ -272,32 +272,32 @@
         state: restarted
 #   A faire dans la vm scm.jobjects.net après un vagrant ssh scm
 #
-#    sudo -u git /usr/local/bin/gitea admin auth add-ldap \
-#    --config /etc/gitea/gitea.ini \
-#    --name 'ldap (via Bind DN) source full' \
-#    --security-protocol LDAPS  \
-#    --skip-tls-verify  \
-#    --host idm.jobjects.net  \
-#    --port 636  \
-#    --user-search-base cn=users,cn=accounts,dc=jobjects,dc=net  \
-#    --user-filter '(memberOf=cn=ipausers,cn=groups,cn=accounts,dc=jobjects,dc=net)'  \
-#    --admin-filter '(memberOf=cn=admins,cn=groups,cn=accounts,dc=jobjects,dc=net)' \
-#    --restricted-filter '(memberOf=cn=restricted-group,ou=example,dc=full-domain-bind,dc=org)'  \
-#    --username-attribute uid  \
-#    --firstname-attribute givenName  \
-#    --surname-attribute sn  \
-#    --email-attribute mail  \
-#    --bind-dn uid=admin,cn=users,cn=accounts,dc=jobjects,dc=net  \
-#    --bind-password 'HelloWorld1'  \
-#    --synchronize-users  \
-#    --page-size 99  \
-#    --enable-groups true \
-#    --group-search-base-dn cn=groups,cn=accounts,dc=jobjects,dc=net  \
-#    --group-member-attribute member  \
-#    --group-user-attribute uid  \
-#    --group-filter '(|(cn=gitea_users)(cn=admins))' \
-#    --group-team-map-removal true \
-#    --skip-local-2fa true
+sudo -u git /usr/local/bin/gitea admin auth add-ldap \
+--config /etc/gitea/gitea.ini \
+--name 'ldap (via Bind DN)' \
+--security-protocol LDAPS  \
+--skip-tls-verify \
+--host idm.jobjects.net  \
+--port 636  \
+--user-search-base cn=users,cn=accounts,dc=jobjects,dc=net  \
+--user-filter '(memberOf=cn=ipausers,cn=groups,cn=accounts,dc=jobjects,dc=net)'  \
+--admin-filter '(memberOf=cn=admins,cn=groups,cn=accounts,dc=jobjects,dc=net)' \
+--restricted-filter '' \
+--username-attribute uid  \
+--firstname-attribute givenName  \
+--surname-attribute sn  \
+--email-attribute mail  \
+--bind-dn uid=admin,cn=users,cn=accounts,dc=jobjects,dc=net  \
+--bind-password 'HelloWorld1'  \
+--synchronize-users  \
+--page-size 99  \
+--enable-groups \
+--group-search-base-dn cn=groups,cn=accounts,dc=jobjects,dc=net  \
+--group-member-attribute member  \
+--group-user-attribute uid  \
+--group-filter '(|(cn=gitea_users)(cn=admins))' \
+--group-team-map-removal \
+--skip-local-2fa
 #
 #    sudo -u git /usr/local/bin/gitea admin auth list \
 #    --config /etc/gitea/gitea.ini
