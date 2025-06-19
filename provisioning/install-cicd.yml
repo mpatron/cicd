@@ -1,205 +1,4 @@
 ---
-- name: Playbook to configure IPA servers
-  hosts: ipaserver
-  become: true
-  roles:
-    - role: freeipa.ansible_freeipa.ipaserver
-      state: present
-      vars:
-        ipaserver_domain: "{{ generic_domain }}"
-        ipaserver_realm: "{{ generic_realm }}"
-        ipaserver_ip_addresses: "192.168.56.110"
-        ipaadmin_password: "{{ generic_password }}"
-        ipadm_password: "{{ generic_password }}"
-        ipaserver_setup_dns: true
-        ipaserver_forwarders:
-          - 8.8.8.8
-          - 1.1.1.1
-        # ipaserver_reverse_zones: "56.168.192.in-addr.arpa"
-        ipaserver_reverse_zones: "192.168.56.0/24"
-        ipaserver_setup_kra: true
-  tasks:
-    - name: Set IPA domain config
-      freeipa.ansible_freeipa.ipaconfig:
-        ipaadmin_password: "{{ generic_password }}"
-        enable_sid: true
-        ipadefaultloginshell: "/bin/bash"
-    # Install IPA Groupes
-    - name: Include groups_present.json
-      ansible.builtin.include_vars:
-        file: files/groups_present.json
-    - name: Groups present
-      freeipa.ansible_freeipa.ipagroup:
-        ipaadmin_password: "{{ generic_password }}"
-        groups: "{{ groups_present }}"
-    # Install IPA Users
-    - name: Users present
-      freeipa.ansible_freeipa.ipauser:
-        ipaadmin_password: "{{ generic_password }}"
-        update_password: on_create
-        users:
-          - name: alice
-            first: Alice
-            last: Savoie
-            email: alice@{{ generic_domain }}
-            password: "{{ generic_password }}"
-          - name: bob
-            first: Bob
-            last: Marley
-            email: bob@{{ generic_domain }}
-            password: "{{ generic_password }}"
-          - name: carole
-            first: Carole
-            last: Rousseau
-            email: carole@{{ generic_domain }}
-            password: "{{ generic_password }}"
-          - name: david
-            first: David
-            last: Beckham
-            email: david@{{ generic_domain }}
-            password: "{{ generic_password }}"
-          - name: eve
-            first: Eve
-            last: Lavigne
-            email: eve@{{ generic_domain }}
-            password: "{{ generic_password }}"
-          - name: franck
-            first: Franck
-            last: Leroy
-            email: eve@{{ generic_domain }}
-            password: "{{ generic_password }}"
-          - name: george
-            first: George
-            last: Washington
-            email: george@{{ generic_domain }}
-            password: "{{ generic_password }}"
-    # Add me
-    - name: Create me on FreeIPA
-      freeipa.ansible_freeipa.ipauser:
-        ipaadmin_password: "{{ generic_password }}"
-        name: mpatron
-        first: Mickael
-        last: Patron
-        title: "Mr"
-        displayname: "Mickael Patron"
-        password: "{{ generic_password }}"
-        update_password: on_create
-    - name: Add to me the admins group
-      freeipa.ansible_freeipa.ipagroup:
-        ipaadmin_password: "{{ generic_password }}"
-        name: admins
-        action: member
-        user:
-          - mpatron
-    - name: Add to me the wheel group
-      freeipa.ansible_freeipa.ipagroup:
-        ipaadmin_password: "{{ generic_password }}"
-        name: wheel
-        action: member
-        user:
-          - mpatron
-    # Install IPA Groupes
-    - name: Include groups_present.json
-      ansible.builtin.include_vars:
-        file: files/groups_present.json
-    - name: Groups present
-      freeipa.ansible_freeipa.ipagroup:
-        ipaadmin_password: "{{ generic_password }}"
-        groups: "{{ groups_present }}"
-
-- name: Install IPA clients
-  hosts: scm.jobjects.net
-  become: true
-  pre_tasks:
-  roles:
-    - role: freeipa.ansible_freeipa.ipaclient
-      state: present
-      vars:
-        ipaadmin_password: "{{ generic_password }}"
-        ipaclient_mkhomedir: true
-        ipaclient_subid: true
-        ipaclient_server: "idm.{{ generic_domain }}"
-        ipaclient_domain: "{{ generic_domain }}"
-        ipaclient_realm: "{{ generic_realm }}"
-        ipaclient_configure_dns_resolver: true
-        ipaclient_dns_servers: "192.168.56.110"
-        ipaclient_force_join: true
-  tasks:
-    - name: Ensure service is present HTTP/scm.{{ generic_domain }}
-      freeipa.ansible_freeipa.ipaservice:
-        ipaadmin_password: "{{ generic_password }}"
-        services:
-          - name: HTTP/scm.{{ generic_domain }}
-            host: scm.{{ generic_domain }}
-    - name: Create directory /etc/ssl/private if does not exist
-      ansible.builtin.file:
-        path: /etc/ssl/private
-        state: directory
-        owner: "root"
-        group: "root"
-        mode: '0755'
-    - name: Create directory /etc/ssl/csr if does not exist
-      ansible.builtin.file:
-        path: /etc/ssl/csr
-        state: directory
-        owner: "root"
-        group: "root"
-        mode: '0755'
-    - name: Generate an OpenSSL private key with the default values (4096 bits, RSA)
-      community.crypto.openssl_privatekey:
-        path: /etc/ssl/private/http.scm.{{ generic_domain }}.pem
-    - name: Generate an OpenSSL Certificate Signing Request
-      community.crypto.openssl_csr:
-        path: "/etc/ssl/csr/http.scm.{{ generic_domain }}.csr"
-        privatekey_path: "/etc/ssl/private/http.scm.{{ generic_domain }}.pem"
-        common_name: "scm.{{ generic_domain }}"
-    # This task is used to request a certificate for the web server
-    # It requires a CSR file to be present on the client
-    # The CSR file can be generated using openssl or any other tool
-    # The CSR file should be placed in /etc/pki/tls/csr/http.scm.{{ generic_domain }}.csr
-    # The certificate will be stored in /etc/pki/tls/certs/http.scm.{{ generic_domain }}.crt
-    - name: Request a certificate for a web server gitea
-      freeipa.ansible_freeipa.ipacert:
-        ipaadmin_password: "{{ generic_password }}"
-        state: requested
-        # csr: "{{ lookup('ansible.builtin.file', '/etc/ssl/csr/http.scm.{{ generic_domain }}.csr') }}"
-        csr_file: "/etc/ssl/csr/http.scm.{{ generic_domain }}.csr"
-        certificate_out: "/etc/ssl/certs/http.scm.{{ generic_domain }}.crt"
-        principal: HTTP/scm.{{ generic_domain }}
-      register: cert
-    - name: Droit sur la clef privé de http-gitea
-      ansible.builtin.file:
-        path: /etc/ssl/private/http.scm.{{ generic_domain }}.pem
-        state: file
-        owner: "root"
-        group: "root"
-        mode: '0644'
-    - name: Droit sur le certificat de http-gitea
-      ansible.builtin.file:
-        path: /etc/ssl/certs/http.scm.{{ generic_domain }}.crt
-        state: file
-        owner: "root"
-        group: "root"
-        mode: '0644'
-
-      # Voir la privé, la request et le certificat dans 'ls -lah /etc/ssl/{private,csr,certs/}''
-    # Add scm
-    - name: Create scm account on FreeIPA
-      freeipa.ansible_freeipa.ipauser:
-        ipaadmin_password: "{{ generic_password }}"
-        name: scm
-        first: Source
-        last: ControlManager
-        title: "Mr"
-        displayname: "SCM"
-        passwordexpiration: "2030-12-31 23:59:59"
-        password: "{{ generic_password }}"
-        update_password: on_create # always
-    - name: Essais de connection
-      ansible.builtin.shell:
-        cmd: "/usr/bin/sshpass -p {{ generic_password }} ssh scm@scm.jobjects.net ls /home && touch /tmp/scm-success"
-        creates: /tmp/scm-success
-
 - name: Install SCM
   hosts: scm.jobjects.net
   become: true
@@ -272,32 +71,32 @@
         state: restarted
 #   A faire dans la vm scm.jobjects.net après un vagrant ssh scm
 #
-sudo -u git /usr/local/bin/gitea admin auth add-ldap \
---config /etc/gitea/gitea.ini \
---name 'ldap (via Bind DN)' \
---security-protocol LDAPS  \
---skip-tls-verify \
---host idm.jobjects.net  \
---port 636  \
---user-search-base cn=users,cn=accounts,dc=jobjects,dc=net  \
---user-filter '(memberOf=cn=ipausers,cn=groups,cn=accounts,dc=jobjects,dc=net)'  \
---admin-filter '(memberOf=cn=admins,cn=groups,cn=accounts,dc=jobjects,dc=net)' \
---restricted-filter '' \
---username-attribute uid  \
---firstname-attribute givenName  \
---surname-attribute sn  \
---email-attribute mail  \
---bind-dn uid=admin,cn=users,cn=accounts,dc=jobjects,dc=net  \
---bind-password 'HelloWorld1'  \
---synchronize-users  \
---page-size 99  \
---enable-groups \
---group-search-base-dn cn=groups,cn=accounts,dc=jobjects,dc=net  \
---group-member-attribute member  \
---group-user-attribute uid  \
---group-filter '(|(cn=gitea_users)(cn=admins))' \
---group-team-map-removal \
---skip-local-2fa
+# sudo -u git /usr/local/bin/gitea admin auth add-ldap \
+# --config /etc/gitea/gitea.ini \
+# --name 'ldap (via Bind DN)' \
+# --security-protocol LDAPS  \
+# --skip-tls-verify \
+# --host idm.jobjects.net  \
+# --port 636  \
+# --user-search-base cn=users,cn=accounts,dc=jobjects,dc=net  \
+# --user-filter '(memberOf=cn=ipausers,cn=groups,cn=accounts,dc=jobjects,dc=net)'  \
+# --admin-filter '(memberOf=cn=admins,cn=groups,cn=accounts,dc=jobjects,dc=net)' \
+# --restricted-filter '' \
+# --username-attribute uid  \
+# --firstname-attribute givenName  \
+# --surname-attribute sn  \
+# --email-attribute mail  \
+# --bind-dn uid=admin,cn=users,cn=accounts,dc=jobjects,dc=net  \
+# --bind-password 'HelloWorld1'  \
+# --synchronize-users  \
+# --page-size 99  \
+# --enable-groups \
+# --group-search-base-dn cn=groups,cn=accounts,dc=jobjects,dc=net  \
+# --group-member-attribute member  \
+# --group-user-attribute uid  \
+# --group-filter '(|(cn=gitea_users)(cn=admins))' \
+# --group-team-map-removal \
+# --skip-local-2fa
 #
 #    sudo -u git /usr/local/bin/gitea admin auth list \
 #    --config /etc/gitea/gitea.ini
