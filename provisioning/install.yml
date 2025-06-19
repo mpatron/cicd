@@ -2,4 +2,4 @@
 - name: Include a play IPA
   ansible.builtin.import_playbook: install_ipa.yml
 - name: Include a play GitEA
-  ansible.builtin.import_playbook: install-cicd.yml
+  ansible.builtin.import_playbook: install-gitea.yml

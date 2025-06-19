@@ -30,7 +30,7 @@
           - name: HTTP/scm.{{ generic_domain }}
             host: scm.{{ generic_domain }}
     - name: Configure LDAP in Gitea
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: /etc/gitea/gitea.ini
         block: |
           [auth.ldap]
@@ -59,14 +59,14 @@
 # "--group-user-attribute", "uid",
 # "--group-filter", "(|(cn=gitea_users)(cn=admins))",
 # "--group-team-map", `{"cn=my-group,cn=groups,dc=example,dc=org": {"MyGiteaOrganization": ["MyGiteaTeam1", "MyGiteaTeam2"]}}`,
-# "--group-team-map-removal",          
+# "--group-team-map-removal",
         owner: git
         group: gitea
         mode: '0640'
         # sudo -u git /usr/local/bin/gitea admin user list --config /etc/gitea/gitea.ini
 
     - name: Restart Gitea service
-      service:
+      ansible.builtin.service:
         name: gitea
         state: restarted
 #   A faire dans la vm scm.jobjects.net après un vagrant ssh scm

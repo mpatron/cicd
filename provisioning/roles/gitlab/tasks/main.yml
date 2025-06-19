@@ -19,8 +19,9 @@
 
 # Configure GitLab Repository
 - name: Configure GitLab Repository
-  ansible.builtin.shell: |
-    curl -sS https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | sudo bash
+  ansible.builtin.shell:
+    cmd: set -o pipefail && curl -sS https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | sudo bash
+    executable: /bin/bash
   changed_when: false
 
 - name: Create SSL directory
@@ -51,11 +52,14 @@
   ansible.builtin.dnf:
     name: gitlab-ce
     state: latest
+    update_only: true # <- Updates but does not install additional packages.
 
 - name: Reconfigure GitLab
   ansible.builtin.command: gitlab-ctl reconfigure
   async: 10
   poll: 0
+  register: my_output # <- Registers the command output.
+  changed_when: my_output.rc != 0 # <- Uses the return code to define when the task has changed.
 
 - name: Open firewall ports 80 and 443
   ansible.posix.firewalld:
@@ -70,6 +74,10 @@
 
 - name: Set SELinux boolean for httpd_can_network_connect
   ansible.builtin.command: sudo setsebool -P httpd_can_network_connect 1
+  register: my_output # <- Registers the command output.
+  changed_when: my_output.rc != 0 # <- Uses the return code to define when the task has changed.
 
 - name: Set SELinux boolean for nis_enabled
   ansible.builtin.command: sudo setsebool -P nis_enabled 1
+  register: my_output # <- Registers the command output.
+  changed_when: my_output.rc != 0 # <- Uses the return code to define when the task has changed.

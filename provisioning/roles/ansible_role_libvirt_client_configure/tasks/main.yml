@@ -76,7 +76,7 @@
       - java-21-openjdk-headless
       - java-21-openjdk-devel
       - java-21-openjdk
-  when: ansible_role_libvirt_client_configure_delete_all_vm == true
+  when: ansible_role_libvirt_client_configure_delete_all_vm
 - name: Install a list of packages with a list variable
   ansible.builtin.dnf:
     name: "{{ packages }}"
@@ -122,13 +122,13 @@
 ## Keep facts to stop firewall to down
 - name: Recupération du service facts
   ansible.builtin.service_facts:
-  when: ansible_role_libvirt_client_configure_desactivate_firewall == true
+  when: ansible_role_libvirt_client_configure_desactivate_firewall
 - name: Stop service firewalld, if started
   ansible.builtin.service:
     name: firewalld
     state: stopped
     enabled: false
-  when: (ansible_role_libvirt_client_configure_desactivate_firewall == true) and (ansible_facts.services['firewalld.service'] is defined)
+  when: ansible_role_libvirt_client_configure_desactivate_firewall and (ansible_facts.services['firewalld.service'] is defined)
 # User admin
 # sudo bash -c "printf '%s\n%s\n' 'hadoop' 'hadoop' | passwd hadoop"
 # printf '%s\n' "hadoop" | mkpasswd -s --method=sha-512

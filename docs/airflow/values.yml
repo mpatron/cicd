@@ -60,7 +60,7 @@ workers:
     - name: myca
       configMap:
         name: ca-cerficates-idm.pem
-        defaultMode: 0644
+        defaultMode: "0644"
 #    - name: ca-cerficates-all
 #      emptyDir: {}
   extraVolumeMounts:
@@ -69,4 +69,3 @@ workers:
       subPath: ca-cerficates-idm.pem
 #    - name: ca-cerficates-all
 #      mountPath: /etc/ssl/certs/ca-certificates.crt
-

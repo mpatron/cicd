@@ -99,10 +99,10 @@
         user:
           - mpatron
     # Install IPA Groupes
-    - name: Include groups_present.json
+    - name: Include Groups with groups_present.json
       ansible.builtin.include_vars:
         file: files/groups_present.json
-    - name: Groups present
+    - name: Include Groups in FreeIPA
       freeipa.ansible_freeipa.ipagroup:
         ipaadmin_password: "{{ generic_password }}"
         groups: "{{ groups_present }}"
