@@ -167,8 +167,6 @@ On affiche le mot de passe root
 podman exec --interactive --tty gitlab cat /etc/gitlab/initial_root_password
 ~~~
 
-
-
 ## Ceph install
 
 ~~~bash
@@ -183,6 +181,7 @@ Générer le fichier de configuration avec toutes les valeurs par default :
 ~~~bash
 ansible-config init --disabled -t all > ansible-all-defaults.cfg
 ~~~
+
 Vrac
 
 ~~~txt
